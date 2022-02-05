@@ -4,21 +4,51 @@
 
 package frc.robot.commands;
 
+import java.lang.invoke.ConstantCallSite;
+
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants;
+import frc.robot.subsystems.Climber;
+
 
 public class Extend extends CommandBase {
   /** Creates a new Extend. */
-  public Extend() {
-    // Use addRequirements() here to declare subsystem dependencies.
+  private DigitalInput input;
+  private Climber climber;
+  private int motorNum, steps, direction;
+  private boolean currInput;
+
+  public Extend(Climber climber, int motorNum, int steps) {
+    addRequirements(climber);
+    this.climber = climber;
+    this.motorNum = motorNum;
+    this.steps = steps;
+    if(steps > 0) direction = 1;
+    else if(steps < 0) direction = -1;
+    input = new DigitalInput(Constants.DIOPorts.refSensor);
+    currInput = input.get();
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+    if(steps != 0){
+      if(input.get() != currInput && input.get()){
+        steps -= direction;
+      }
+      climber.extend(motorNum, direction);
+      currInput = input.get();
+    }
+  }
 
   // Called once the command ends or is interrupted.
   @Override

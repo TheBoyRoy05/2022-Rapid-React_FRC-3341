@@ -16,23 +16,36 @@ public final class Constants {
     public final class Ports{
         public static final int frontLeftRotPort = 0;
         public static final int frontRightRotPort = 0;
-        public static final int backLeftRotPort = 0;
-        public static final int backRightRotPort = 0;
+        public static final int rearLeftRotPort = 0;
+        public static final int rearRightRotPort = 0;
         public static final int frontLeftExPort = 0;
         public static final int frontRightExPort = 0;
-        public static final int backLeftExPort = 0;
-        public static final int backRightExPort = 0;
+        public static final int rearLeftExPort = 0;
+        public static final int rearRightExPort = 0;
+    }
+
+    public final class DIOPorts{
+        public static final int frontLeftRefSensor = 0;
+        public static final int frontRightRefSensor = 0;
+        public static final int rearLeftRefSensor = 0;
+        public static final int rearRightRefSensor = 0;
+    }
+
+    public final class armAngles{
+        public static final double up = Math.PI;
+        public static final double down = 0;
+        public static final double zero = Math.PI / 2;
     }
 
     public final class MotorNums{
         public static final int frontLeftRot = 1;
         public static final int frontRightRot = 2;
-        public static final int backLeftRot = 3;
-        public static final int backRightRot = 4;
+        public static final int rearLeftRot = 3;
+        public static final int rearRightRot = 4;
         public static final int frontLeftEx = 5;
         public static final int frontRightEx = 6;
-        public static final int backLeftEx = 7;
-        public static final int backRightEx = 8;
+        public static final int rearLeftEx = 7;
+        public static final int rearRightEx = 8;
     }
 
     public static final class pidConsts{
@@ -47,4 +60,13 @@ public final class Constants {
         public static final double kv = 0;
         public static final double ka = 0;
   }
+
+  public static class ExtendConsts{
+      public static int frontLeftCurrPos = 0;
+      public static int frontRightCurrPos = 0;
+      public static int rearLeftCurrPos = 0;
+      public static int rearRightCurrPos = 0;
+  }
+
+  public static final double threshold = 0;
 }

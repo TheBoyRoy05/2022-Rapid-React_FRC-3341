@@ -18,17 +18,24 @@ public class Extend extends CommandBase {
   /** Creates a new Extend. */
   private DigitalInput input;
   private Climber climber;
-  private int motorNum, steps, direction;
+  private int motorNum, steps, direction, currPos;
   private boolean currInput;
 
-  public Extend(Climber climber, int motorNum, int steps) {
+  public Extend(Climber climber, int motorNum, int pos) {
     addRequirements(climber);
     this.climber = climber;
     this.motorNum = motorNum;
-    this.steps = steps;
+    if(motorNum == 1) currPos = Constants.ExtendConsts.frontLeftCurrPos;
+    else if(motorNum == 2) currPos = Constants.ExtendConsts.frontRightCurrPos;
+    else if(motorNum == 3) currPos = Constants.ExtendConsts.rearLeftCurrPos;
+    else if(motorNum == 4) currPos = Constants.ExtendConsts.rearRightCurrPos;
+    steps = pos - currPos;
+    if(motorNum == 1) input = new DigitalInput(Constants.DIOPorts.frontLeftRefSensor);
+    else if(motorNum == 2) input = new DigitalInput(Constants.DIOPorts.frontRightRefSensor);
+    else if(motorNum == 3) input = new DigitalInput(Constants.DIOPorts.rearLeftRefSensor);
+    else if(motorNum == 4) input = new DigitalInput(Constants.DIOPorts.rearRightRefSensor);
     if(steps > 0) direction = 1;
     else if(steps < 0) direction = -1;
-    input = new DigitalInput(Constants.DIOPorts.refSensor);
     currInput = input.get();
   }
 
@@ -44,6 +51,7 @@ public class Extend extends CommandBase {
     if(steps != 0){
       if(input.get() != currInput && input.get()){
         steps -= direction;
+        currPos += direction;
       }
       climber.extend(motorNum, direction);
       currInput = input.get();
@@ -52,11 +60,13 @@ public class Extend extends CommandBase {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    climber.extend(motorNum, 0);
+  }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return steps == 0;
   }
 }

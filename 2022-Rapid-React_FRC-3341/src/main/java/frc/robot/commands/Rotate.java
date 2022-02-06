@@ -36,8 +36,8 @@ public class Rotate extends CommandBase {
     double climberAngle = Math.PI / 2;
     if(motorNum == 1) climberAngle = climber.getAngleFrontLeft();
     else if (motorNum == 2) climberAngle = climber.getAngleFrontRight();
-    else if (motorNum == 3) climberAngle = climber.getAngleBackLeft();
-    else if (motorNum == 4) climberAngle = climber.getAngleBackRight();
+    else if (motorNum == 3) climberAngle = climber.getAngleRearLeft();
+    else if (motorNum == 4) climberAngle = climber.getAngleRearRight();
     climber.rotate(motorNum, pid.calculate(climberAngle) + arm.calculate(angle, 0));
   }
 

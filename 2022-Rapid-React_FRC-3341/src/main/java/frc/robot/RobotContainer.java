@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.Extend;
 import frc.robot.commands.Rotate;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.ExampleSubsystem;
@@ -25,6 +26,7 @@ public class RobotContainer {
   private Rotate up;
   private Rotate down;
   private Rotate zero;
+  private Extend extend;
   private Joystick joy;
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
@@ -38,6 +40,7 @@ public class RobotContainer {
     up = new Rotate(climber, 1, Constants.armAngles.up);
     down = new Rotate(climber, 1, Constants.armAngles.down);
     zero = new Rotate(climber, 1, Constants.armAngles.zero);
+    climber.setDefaultCommand(extend);
     configureButtonBindings();
   }
 

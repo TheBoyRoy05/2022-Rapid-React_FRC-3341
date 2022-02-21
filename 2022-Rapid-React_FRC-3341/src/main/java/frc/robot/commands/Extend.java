@@ -7,6 +7,7 @@ package frc.robot.commands;
 import java.lang.invoke.ConstantCallSite;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -20,8 +21,9 @@ public class Extend extends CommandBase {
   private Climber climber;
   private int motorNum, steps, direction, currPos;
   private boolean currInput;
+  private Joystick joy;
 
-  public Extend(Climber climber, int motorNum, int pos) {
+  public Extend(Climber climber, int motorNum, int pos, Joystick joy) {
     addRequirements(climber);
     this.climber = climber;
     this.motorNum = motorNum;
@@ -37,6 +39,7 @@ public class Extend extends CommandBase {
     if(steps > 0) direction = 1;
     else if(steps < 0) direction = -1;
     currInput = input.get();
+    this.joy = joy;
   }
 
   // Called when the command is initially scheduled.
@@ -48,14 +51,15 @@ public class Extend extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(steps != 0){
+    /*if(steps != 0){
       if(input.get() != currInput && input.get()){
         steps -= direction;
         currPos += direction;
       }
-      climber.extend(motorNum, direction);
+      climber.extend(motorNum, .05 * direction);
       currInput = input.get();
-    }
+    }*/
+    climber.extend(motorNum, .05 * joy.getRawAxis(1));
   }
 
   // Called once the command ends or is interrupted.

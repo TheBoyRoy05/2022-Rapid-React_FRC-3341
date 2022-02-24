@@ -4,80 +4,112 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
-import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.InvertType;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
-public class Arm extends SubsystemBase {
-  /** Creates a new Arm. */
-  private final WPI_TalonSRX extend;
-  private final WPI_TalonSRX rotate;
+import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.Victor;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.RobotContainer;
 
-  public Arm() {
-    extend = new WPI_TalonSRX(1);
-    rotate = new WPI_TalonSRX(4);
+import com.kauailabs.navx.frc.AHRS;
 
-    extend.setInverted(false);
-    rotate.setInverted(false);
+public class DriveTrain extends SubsystemBase 
+{
+  /** Creates a new ExampleSubsystem. */
+  private final WPI_TalonSRX _leftDriveTalon;
+  private final WPI_TalonSRX _rightDriveTalon;
+  private final VictorSPX _leftDriveVictor;
+  private final VictorSPX _rightDriveVictor;
 
-    extend.configFactoryDefault();
-    rotate.configFactoryDefault();
+  private AHRS navx = new AHRS(SPI.Port.kMXP);
+  private double ticksToCm  = 127.0/10581.0; //will test constant later
+  private DifferentialDrive _diffDrive;
+ 
+  public DriveTrain() 
+  {
+    _leftDriveTalon = new WPI_TalonSRX(Constants.DriveTrainPorts.LeftDriveTalonPort);
+    _rightDriveTalon = new WPI_TalonSRX(Constants.DriveTrainPorts.RightDriveTalonPort);
+    _leftDriveVictor = new VictorSPX(Constants.DriveTrainPorts.LeftDriveVictorPort);
+    _rightDriveVictor = new VictorSPX(Constants.DriveTrainPorts.RightDriveVictorPort);
 
-    rotate.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 10);
-    rotate.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
-    rotate.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
+    _leftDriveVictor.follow(_leftDriveTalon);
+    _rightDriveVictor.follow(_rightDriveTalon);
+
+    _leftDriveTalon.setInverted(true);
+    _rightDriveTalon.setInverted(false);
+    _leftDriveVictor.setInverted(InvertType.FollowMaster);
+    _rightDriveVictor.setInverted(InvertType.FollowMaster);
+
+    _diffDrive = new DifferentialDrive(_leftDriveTalon, _rightDriveTalon);
+
+    _leftDriveTalon.configFactoryDefault();
+    _leftDriveTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+    _rightDriveTalon.configFactoryDefault();
+
+
+    _rightDriveTalon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+
   }
 
-  public void extendPow(double power){
-    extend.set(ControlMode.PercentOutput, power);
-  }
-
-  public void rotatePow(double power){
-    rotate.set(ControlMode.PercentOutput, power);
-  }
-
-  public double getArmTicks(){
-    return rotate.getSelectedSensorPosition();
-  }
-
-  public void resetArm(){
-    rotate.setSelectedSensorPosition(0, 0, 10);
-  }
-
-  public void setArmBrake(boolean brake){
-    if(brake){
-      rotate.setNeutralMode(NeutralMode.Brake);
-    }else{
-      rotate.setNeutralMode(NeutralMode.Coast);
+  public void tankDrive(double leftSpeed, double rightSpeed) {
+    if(Math.abs(leftSpeed) < 0.1){
+      leftSpeed = 0;
     }
+    if(Math.abs(rightSpeed) < 0.1){
+      rightSpeed = 0;
+    } 
+    _rightDriveTalon.set(ControlMode.PercentOutput, -rightSpeed);  
+    _leftDriveTalon.set(ControlMode.PercentOutput, -leftSpeed);
+
+    SmartDashboard.putNumber("leftPow:", leftSpeed);
+    SmartDashboard.putNumber("rightPow:", rightSpeed);
   }
 
-  public int isFwdLSClosed(){
-    return rotate.isFwdLimitSwitchClosed();
+  public void arcadeDrive(double speed, double turn) {
+    _diffDrive.arcadeDrive(speed, turn);
   }
 
-  public int isRevLSClosed(){
-    return rotate.isRevLimitSwitchClosed();
+  public void resetEncoders() {
+    _leftDriveTalon.setSelectedSensorPosition(0,0,10);
+    _rightDriveTalon.setSelectedSensorPosition(0,0,10);
+  }
+
+  public double getPosition() {
+    return (getTicks() * (ticksToCm));
+    //average distance of both left and right
+  }
+
+  public double getTicks() {
+    return (_leftDriveTalon.getSelectedSensorPosition(0) + _rightDriveTalon.getSelectedSensorPosition(0)) / 2;
+  }
+
+  public double getAngleAndReset(){
+    double degrees = navx.getAngle();
+    navx.reset();
+    return degrees;
+  }
+ 
+  public double getAngle(){
+    return navx.getAngle(); 
+  }
+ 
+  public void resetN(){
+    navx.reset();
   }
 
   @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
+  public void periodic() {}
 
-    //SmartDashboard.putNumber("FwdLS:", isFwdLSClosed());
-    //SmartDashboard.putNumber("RevLS:", isRevLSClosed());
-
-    //SmartDashboard.putNumber("RotTicks:", getArmTicks());
-
-    //extendPow(RobotContainer.getJoy1().getY());
-    //rotatePow(RobotContainer.getJoy1().getY() * 0.01);
+  @Override
+  public void simulationPeriodic() 
+  {
+    // This method will be called once per scheduler run during simulation
   }
 }
